@@ -4,7 +4,7 @@ curl -f -s "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&pag
 found=$(echo $?)
 
 if [[ $found == 1 ]] ; then
-	echo "OH SHIT 283 IS OPEN RUN QUICK FASTER HERE LOOK ITS THE CRN: 41762" | mail -s "URGENT: CS 283 IS NOW OPEN" damore1405@gmail.com
+	echo "283 IS OPEN RUN QUICK FASTER HERE LOOK ITS THE CRN: 41762" | mail -s "URGENT: CS 283 IS NOW OPEN" damore1405@gmail.com
 elif [[ $found == 2 ]] ; then
 	echo "Hmm, something seems to be bunked up in your class checker thing" | mail -s "WARNING: something's wrong" damore1405@gmail.com
 #When its 12PM on the dot, give me an update to make sure things are working
