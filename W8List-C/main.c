@@ -63,11 +63,12 @@ void inOrderTraversal(GumboNode * root){
 //            printf("Enroll found, it is child: %zu\n", root->parent->index_within_parent);
             
             GumboNode * tableRow = root->parent->parent;
-            GumboNode ** kiddoes = (GumboNode** )tableRow->v.element.children.data;
+            GumboNode ** kiddoes = (GumboNode** ) tableRow->v.element.children.data;
             
             GumboNode * maxEnroll = kiddoes[1];
             GumboNode * number    = kiddoes[3];
             
+            //Magic numbers here, not much i can do about it, "0" is simply the location of the first child
             GumboNode * maxEnrollText = maxEnroll->v.element.children.data[0];
             GumboNode * numberText    = number   ->v.element.children.data[0];
             
@@ -122,7 +123,7 @@ int main(void)
         inOrderTraversal(body);
         
         free(s.ptr);
-        
+        gumbo_destroy_output(NULL, output);
         curl_easy_cleanup(curl);
     }
     return 0;

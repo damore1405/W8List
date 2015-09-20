@@ -30,6 +30,7 @@
 		C9AC26161BAF0956007FC74E /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgumbo.1.dylib; path = "../../../../usr/local/Cellar/gumbo-parser/0.9.3/lib/libgumbo.1.dylib"; sourceTree = "<group>"; };
 		C9AC261D1BAF3D0B007FC74E /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = main.h; path = "W8List-C/main.h"; sourceTree = SOURCE_ROOT; };
+		C9AC261E1BAF3E8A007FC74E /* gumbo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gumbo.h; path = ../../gumbo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +51,7 @@
 			children = (
 				C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */,
 				C9AC26161BAF0956007FC74E /* libcurl.tbd */,
+				C9AC261E1BAF3E8A007FC74E /* gumbo.h */,
 				C9AC260C1BAF090A007FC74E /* W8List */,
 				C9AC260B1BAF090A007FC74E /* Products */,
 			);
