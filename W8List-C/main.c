@@ -56,8 +56,7 @@ int main(void)
         
         //now... what do i do lol
         GumboVector children = output->root->v.document.children;
-//        struct GumboInternalNode * childIterator = (struct GumboInternalNode * )rootChildren.data;
-//        printf("Testing out text for the child nodes: %u \n" , output->root->v.element.tag);
+
         printf("Length of root children: %u \n", children.length);
         GumboNode * body = children.data[1];
         
@@ -69,9 +68,18 @@ int main(void)
         
         printf("The number of children in the body is: %u \n", children.length);
         
+        for (int i = 0; i < children.length; i++) {
+            GumboNode * node = children.data[i];
+            if (node->type != GUMBO_NODE_WHITESPACE) {
+                GumboVector nodeAttributes = node->v.element.attributes;
+                for (int j = 0; j < nodeAttributes.length; ++j) {
+                    GumboAttribute * a = nodeAttributes.data[j];
+                    printf("attributes %s:%s \n", a->name , a->value);
+                }
+            }
+        }
         
         free(s.ptr);
-        
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
