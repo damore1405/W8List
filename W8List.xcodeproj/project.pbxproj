@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		C9AC26151BAF093D007FC74E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9AC26141BAF093D007FC74E /* main.c */; settings = {ASSET_TAGS = (); }; };
 		C9AC26171BAF0956007FC74E /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AC26161BAF0956007FC74E /* libcurl.tbd */; };
-		C9AC26191BAF095C007FC74E /* libtidy.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AC26181BAF095C007FC74E /* libtidy.tbd */; };
 		C9AC261B1BAF0984007FC74E /* libgumbo.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */; };
 /* End PBXBuildFile section */
 
@@ -29,8 +28,8 @@
 		C9AC260A1BAF090A007FC74E /* W8List */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = W8List; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9AC26141BAF093D007FC74E /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = "W8List-C/main.c"; sourceTree = SOURCE_ROOT; };
 		C9AC26161BAF0956007FC74E /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
-		C9AC26181BAF095C007FC74E /* libtidy.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libtidy.tbd; path = usr/lib/libtidy.tbd; sourceTree = SDKROOT; };
 		C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgumbo.1.dylib; path = "../../../../usr/local/Cellar/gumbo-parser/0.9.3/lib/libgumbo.1.dylib"; sourceTree = "<group>"; };
+		C9AC261D1BAF3D0B007FC74E /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = main.h; path = "W8List-C/main.h"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,7 +38,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9AC261B1BAF0984007FC74E /* libgumbo.1.dylib in Frameworks */,
-				C9AC26191BAF095C007FC74E /* libtidy.tbd in Frameworks */,
 				C9AC26171BAF0956007FC74E /* libcurl.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,7 +49,6 @@
 			isa = PBXGroup;
 			children = (
 				C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */,
-				C9AC26181BAF095C007FC74E /* libtidy.tbd */,
 				C9AC26161BAF0956007FC74E /* libcurl.tbd */,
 				C9AC260C1BAF090A007FC74E /* W8List */,
 				C9AC260B1BAF090A007FC74E /* Products */,
@@ -70,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				C9AC26141BAF093D007FC74E /* main.c */,
+				C9AC261D1BAF3D0B007FC74E /* main.h */,
 			);
 			path = W8List;
 			sourceTree = "<group>";

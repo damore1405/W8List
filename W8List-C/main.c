@@ -1,13 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <curl/curl.h>
-#include "gumbo.h"
+//
+//  main.c
+//  W8List
+//
+//  Created by Matthew D'Amore on 9/20/15.
+//  Copyright © 2015 Matthew Damore. All rights reserved.
+//
 
-struct string {
-    char *ptr;
-    size_t len;
-};
+#include "main.h"
 
 void init_string(struct string *s) {
     s->len = 0;
@@ -34,15 +33,53 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
     return size*nmemb;
 }
 void inOrderTraversal(GumboNode * root){
-    if (root->type != GUMBO_NODE_WHITESPACE) {
-        if (strcasecmp(root->v.text.text, "Enroll")) {
-            puts("FOUND");
+    if (root->parent != NULL && root->type != GUMBO_NODE_WHITESPACE && root->type == GUMBO_NODE_TEXT) {
+        if (!strcasecmp(root->v.text.text, "enroll")) {
+            
+            //MAX ENROLL 1
+            //NUMBER     3
+            
+//            printf("Enroll found, it is child: %zu\n", root->parent->index_within_parent);
+            
+            GumboNode * tableRow = root->parent->parent;
+            GumboNode ** kiddoes = (GumboNode** )tableRow->v.element.children.data;
+            
+            GumboNode * maxEnroll = kiddoes[1];
+            GumboNode * number    = kiddoes[3];
+            
+            GumboNode * maxEnrollText = maxEnroll->v.element.children.data[0];
+            GumboNode * numberText    = number   ->v.element.children.data[0];
+            
+            puts(maxEnrollText->v.text.text);
+            puts(numberText->v.text.text);
+            
             return;
         }
-        if (root->v.element.children.length > 0) {
-            for (int i = 0; i < root->v.element.children.length; ++i) {
-                inOrderTraversal(root->v.element.children.data[i]);
-            }
+        if (!strcasecmp(root->v.text.text, "max enroll")) {
+            
+            //MAX ENROLL 1
+            //NUMBER     3
+            
+//            printf("Enroll found, it is child: %zu\n", root->parent->index_within_parent);
+            
+            GumboNode * tableRow = root->parent->parent;
+            GumboNode ** kiddoes = (GumboNode** )tableRow->v.element.children.data;
+            
+            GumboNode * maxEnroll = kiddoes[1];
+            GumboNode * number    = kiddoes[3];
+            
+            GumboNode * maxEnrollText = maxEnroll->v.element.children.data[0];
+            GumboNode * numberText    = number   ->v.element.children.data[0];
+            
+            puts(maxEnrollText->v.text.text);
+            puts(numberText->v.text.text);
+            
+            return;
+        }
+    }                                                           /* vvv  Why is this needed?????????  vvv */
+    if (root->v.element.children.length > 0 && root->v.element.children.length <= root->v.element.children.capacity) {
+        for (int i = 0; i < root->v.element.children.length ; ++i) {
+            inOrderTraversal((GumboNode *)root->v.element.children.data[i]);
         }
     }
     else return;
@@ -72,7 +109,7 @@ int main(void)
         GumboVector children = output->root->v.document.children;
 
         printf("Length of root children: %u \n", children.length);
-        GumboNode * body = children.data[1];
+        GumboNode * body = (GumboNode *) children.data[1];
         
         if (body->v.element.tag == GUMBO_TAG_BODY) {
             puts("Successfully tore out the body of the html");
@@ -82,21 +119,10 @@ int main(void)
         
         printf("The number of children in the body is: %u \n", children.length);
         
-//        for (int i = 0; i < children.length; i++) {
-//            GumboNode * node = children.data[i];
-//            if (node->type != GUMBO_NODE_WHITESPACE) {
-//                GumboVector nodeAttributes = node->v.element.attributes;
-//                for (int j = 0; j < nodeAttributes.length; ++j) {
-//                    GumboAttribute * a = nodeAttributes.data[j];
-//                    printf("attributes %s:%s \n", a->name , a->value);
-//                }
-//            }
-//        }
-        
         inOrderTraversal(body);
         
         free(s.ptr);
-        /* always cleanup */
+        
         curl_easy_cleanup(curl);
     }
     return 0;
