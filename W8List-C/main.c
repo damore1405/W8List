@@ -33,7 +33,20 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
     
     return size*nmemb;
 }
-
+void inOrderTraversal(GumboNode * root){
+    if (root->type != GUMBO_NODE_WHITESPACE) {
+        if (strcasecmp(root->v.text.text, "Enroll")) {
+            puts("FOUND");
+            return;
+        }
+        if (root->v.element.children.length > 0) {
+            for (int i = 0; i < root->v.element.children.length; ++i) {
+                inOrderTraversal(root->v.element.children.data[i]);
+            }
+        }
+    }
+    else return;
+}
 int main(void)
 {
     CURL *curl;
@@ -45,7 +58,8 @@ int main(void)
         init_string(&s);
         
         //Massive ass url for the classes
-        curl_easy_setopt(curl, CURLOPT_URL, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
+        curl_easy_setopt(curl, CURLOPT_URL,
+                         "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
@@ -68,16 +82,18 @@ int main(void)
         
         printf("The number of children in the body is: %u \n", children.length);
         
-        for (int i = 0; i < children.length; i++) {
-            GumboNode * node = children.data[i];
-            if (node->type != GUMBO_NODE_WHITESPACE) {
-                GumboVector nodeAttributes = node->v.element.attributes;
-                for (int j = 0; j < nodeAttributes.length; ++j) {
-                    GumboAttribute * a = nodeAttributes.data[j];
-                    printf("attributes %s:%s \n", a->name , a->value);
-                }
-            }
-        }
+//        for (int i = 0; i < children.length; i++) {
+//            GumboNode * node = children.data[i];
+//            if (node->type != GUMBO_NODE_WHITESPACE) {
+//                GumboVector nodeAttributes = node->v.element.attributes;
+//                for (int j = 0; j < nodeAttributes.length; ++j) {
+//                    GumboAttribute * a = nodeAttributes.data[j];
+//                    printf("attributes %s:%s \n", a->name , a->value);
+//                }
+//            }
+//        }
+        
+        inOrderTraversal(body);
         
         free(s.ptr);
         /* always cleanup */
