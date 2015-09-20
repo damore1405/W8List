@@ -7,6 +7,52 @@
 //
 
 #include "main.h"
+int main(void)
+{
+    CURL *curl;
+    CURLcode res;
+    setlogmask(LOG_UPTO(LOG_NOTICE));
+    openlog("testing out logging", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+    syslog(LOG_NOTICE, "W8List has started");
+    
+    curl = curl_easy_init();
+    if(curl) {
+        struct string s;
+        init_string(&s);
+        
+        //Massive ass url for the classes
+        curl_easy_setopt(curl, CURLOPT_URL,
+                         "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+        res = curl_easy_perform(curl);
+        
+        // So now that i have the website, i need to use gumbo to parse out the information i need
+        GumboOutput * output = gumbo_parse(s.ptr);
+        
+        //now... what do i do lol
+        GumboVector children = output->root->v.document.children;
+        
+        printf("Length of root children: %u \n", children.length);
+        GumboNode * body = (GumboNode *) children.data[1];
+        
+        if (body->v.element.tag == GUMBO_TAG_BODY) {
+            puts("Successfully tore out the body of the html");
+        }
+        //Now make the children vector equal to the children of the body Element
+        children = body->v.document.children;
+        
+        printf("The number of children in the body is: %u \n", children.length);
+        
+        traverseHtml(body);
+        
+        free(s.ptr);
+//        gumbo_destroy_output(NULL, output);
+        curl_easy_cleanup(curl);
+    }
+    return 0;
+}
 
 void init_string(struct string *s) {
     s->len = 0;
@@ -32,7 +78,7 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
     
     return size*nmemb;
 }
-void inOrderTraversal(GumboNode * root){
+void traverseHtml(GumboNode * root){
     if (root->parent != NULL && root->type != GUMBO_NODE_WHITESPACE && root->type == GUMBO_NODE_TEXT) {
         if (!strcasecmp(root->v.text.text, "enroll")) {
             
@@ -80,52 +126,8 @@ void inOrderTraversal(GumboNode * root){
     }                                                           /* vvv  Why is this needed?????????  vvv */
     if (root->v.element.children.length > 0 && root->v.element.children.length <= root->v.element.children.capacity) {
         for (int i = 0; i < root->v.element.children.length ; ++i) {
-            inOrderTraversal((GumboNode *)root->v.element.children.data[i]);
+            traverseHtml((GumboNode *)root->v.element.children.data[i]);
         }
     }
     else return;
 }
-int main(void)
-{
-    CURL *curl;
-    CURLcode res;
-    
-    curl = curl_easy_init();
-    if(curl) {
-        struct string s;
-        init_string(&s);
-        
-        //Massive ass url for the classes
-        curl_easy_setopt(curl, CURLOPT_URL,
-                         "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
-        res = curl_easy_perform(curl);
-        
-        // So now that i have the website, i need to use gumbo to parse out the information i need
-        GumboOutput * output = gumbo_parse(s.ptr);
-        
-        //now... what do i do lol
-        GumboVector children = output->root->v.document.children;
-
-        printf("Length of root children: %u \n", children.length);
-        GumboNode * body = (GumboNode *) children.data[1];
-        
-        if (body->v.element.tag == GUMBO_TAG_BODY) {
-            puts("Successfully tore out the body of the html");
-        }
-        //Now make the children vector equal to the children of the body Element
-        children = body->v.document.children;
-        
-        printf("The number of children in the body is: %u \n", children.length);
-        
-        inOrderTraversal(body);
-        
-        free(s.ptr);
-        gumbo_destroy_output(NULL, output);
-        curl_easy_cleanup(curl);
-    }
-    return 0;
-}
-

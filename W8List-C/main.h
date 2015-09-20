@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <syslog.h>
 #include <string.h>
 #include <curl/curl.h>
 #include "gumbo.h"
@@ -22,6 +23,6 @@ struct string {
 
 void init_string(struct string *s);
 size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s);
-void inOrderTraversal(GumboNode * root);
+void traverseHtml(GumboNode * root);
 
 #endif /* main_h */
