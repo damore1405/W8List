@@ -5,8 +5,11 @@
 //  Created by Matthew D'Amore on 9/20/15.
 //  Copyright © 2015 Matthew Damore. All rights reserved.
 //
+// TODO: NEED TO EMPLEMENT ERROR CHECKING SO THAT WHEN THE WEBSITE IS DOWN, SO NOBODY GETS NOTIFIED
 
 #include "main.h"
+
+
 int main(void)
 {
     CURL *curl;
@@ -19,6 +22,26 @@ int main(void)
     if(curl) {
         struct string s;
         init_string(&s);
+        char * baseUrl = "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct";
+        
+        //TODO: Case based on user input for which semester to select...
+        
+        
+        
+        //TODO: Code implementation for Schools... maybe another string enumeration like the one used for semesters
+        
+        
+        
+        /*  TODO: Implementaion of user input processing... we need
+         *      - School
+         *      - Subject
+         *      - CRN
+         *      - Course Number
+        */
+        
+        
+        puts(SEMESTER_TOKENS[SPRING_2016_TOKEN]); /* Debug */
+
         
         //Massive ass url for the classes
         curl_easy_setopt(curl, CURLOPT_URL,
