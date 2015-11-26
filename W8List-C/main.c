@@ -10,13 +10,67 @@
 #include "main.h"
 
 
-int main(void)
+int main(int argc, char ** argv)
 {
-    CURL *curl;
-    CURLcode res;
+    //TODO: lets go ahead and daemonize
+    pid_t pid, sid;
+    
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then we can exit the parent process. */
+    if (pid > 0) {
+        puts("parent process closing");
+        exit(EXIT_SUCCESS);
+    }
+    
+    /* Change the file mode mask */
+    umask(0);
+    
+    /* Open any logs here */
+    
     setlogmask(LOG_UPTO(LOG_NOTICE));
     openlog("testing out logging", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
     syslog(LOG_NOTICE, "W8List has started");
+    
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+        /* Log any failures here */
+        exit(EXIT_FAILURE);
+    }
+    
+    
+    /* Change the current working directory */
+//    if ((chdir("/")) < 0) {
+//        /* Log any failures here */
+//        exit(EXIT_FAILURE);
+//    }
+    
+    /* Close out the standard file descriptors */
+    puts("Child process closing");
+    close(STDIN_FILENO);
+//    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+    
+    /* Daemon-specific initialization goes here */
+    
+    /* The Big Loop */
+    while (1) {
+        /* Do some task here ... */
+        puts("exiting child now");
+        sleep(1); /* wait 30 seconds */
+        
+    }
+    
+//    exit(EXIT_SUCCESS);
+    
+    CURL *curl;
+    CURLcode res;
+    int opt;
+
     
     curl = curl_easy_init();
     if(curl) {
@@ -25,7 +79,6 @@ int main(void)
         char * baseUrl = "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct";
         
         //TODO: Case based on user input for which semester to select...
-        
         
         
         //TODO: Code implementation for Schools... maybe another string enumeration like the one used for semesters
@@ -40,12 +93,12 @@ int main(void)
         */
         
         
-        puts(SEMESTER_TOKENS[SPRING_2016_TOKEN]); /* Debug */
+puts(SEMESTER_TOKENS[SPRING_2016_TOKEN]); /* Debug */
 
         
         //Massive ass url for the classes
         curl_easy_setopt(curl, CURLOPT_URL,
-                         "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
+                         "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails&page=CourseList&service=direct&sp=&sp=SCI&sp=SCS&sp=S13301&sp=S140&sp=5");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
@@ -71,7 +124,7 @@ int main(void)
         traverseHtml(body);
         
         free(s.ptr);
-//        gumbo_destroy_output(NULL, output);
+        free(output);
         curl_easy_cleanup(curl);
     }
     return 0;

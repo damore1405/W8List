@@ -10,7 +10,7 @@
 #define main_h
 
 // Preprocesser code to link up an enumeration for the string tokens
-#define FOREACH_FRUIT(SEMESTER_TOKEN) \
+#define FOREACH_SEMESTER(SEMESTER_TOKEN) \
 SEMESTER_TOKEN(H4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA)   \
 SEMESTER_TOKEN(ZH4sIAAAAAAAAAFvzloG1uIhBPjWlVC%2BlKLUiNUcvs6hErzw1qSS3WC8lsSRRLyS1KJcBAhiZGJh9GNgTk0tCMnNTSxhEfLISyxL1iwtz9EECxSWJuQXWPgwcJUAtzvkpQBVCEBU5iXnp%2BsElRZl56TB5l9Ti5EKGOgamioKCEgY2IwNDUyNToJHhmXlAaYXA0sQiEG1oqmtoBgCbhSKKpgAAAA%3D%3D)  \
 SEMESTER_TOKEN(ZH4sIAAAAAAAAAFvzloG1uIhBPjWlVC%2BlKLUiNUcvs6hErzw1qSS3WC8lsSRRLyS1KJcBAhiZGJh9GNgTk0tCMnNTSxhEfLISyxL1iwtz9EECxSWJuQXWPgwcJUAtzvkpQBVCEBU5iXnp%2BsElRZl56TB5l9Ti5EKGOgamioKCEgY2IwNDU2NToJHBBSBVCoGliUVAZQqGprqGZgAfTc62pgAAAA%3D%3D)   \
@@ -27,16 +27,17 @@ enum FRUIT_ENUM {
 };
 
 static const char *SEMESTER_TOKENS[] = {
-    FOREACH_FRUIT(GENERATE_STRING)
+    FOREACH_SEMESTER(GENERATE_STRING)
 };
 #include <stdio.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <syslog.h>
 #include <string.h>
 #include <curl/curl.h>
 #include "gumbo.h"
-
-//static char * FALL_2015_TOKEN = "H4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA";
 
 
 struct string {
