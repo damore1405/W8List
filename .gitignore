@@ -8,3 +8,9 @@ W8List-C.xcodeproj/project.xcworkspace/xcuserdata/Matt.xcuserdatad/UserInterface
 W8List-C.xcodeproj/xcuserdata/Matt.xcuserdatad/xcschemes/W8List-C.xcscheme
 
 W8List-C.xcodeproj/xcuserdata/Matt.xcuserdatad/xcschemes/xcschememanagement.plist
+
+*.xcbkptlist
+
+*.xcuserstate
+
+*.pbxproj
