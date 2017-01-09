@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C9AC26151BAF093D007FC74E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9AC26141BAF093D007FC74E /* main.c */; settings = {ASSET_TAGS = (); }; };
 		C9AC26171BAF0956007FC74E /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AC26161BAF0956007FC74E /* libcurl.tbd */; };
 		C9AC261B1BAF0984007FC74E /* libgumbo.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */; };
 /* End PBXBuildFile section */
@@ -25,11 +24,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C94B2BEA1E216E170003C0C1 /* W8List-C */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "W8List-C"; sourceTree = "<group>"; };
 		C9AC260A1BAF090A007FC74E /* W8List */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = W8List; sourceTree = BUILT_PRODUCTS_DIR; };
-		C9AC26141BAF093D007FC74E /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = "W8List-C/main.c"; sourceTree = SOURCE_ROOT; };
 		C9AC26161BAF0956007FC74E /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgumbo.1.dylib; path = "../../../../usr/local/Cellar/gumbo-parser/0.9.3/lib/libgumbo.1.dylib"; sourceTree = "<group>"; };
-		C9AC261D1BAF3D0B007FC74E /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = main.h; path = "W8List-C/main.h"; sourceTree = SOURCE_ROOT; };
 		C9AC261E1BAF3E8A007FC74E /* gumbo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gumbo.h; path = ../../gumbo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -52,7 +50,7 @@
 				C9AC261A1BAF0984007FC74E /* libgumbo.1.dylib */,
 				C9AC26161BAF0956007FC74E /* libcurl.tbd */,
 				C9AC261E1BAF3E8A007FC74E /* gumbo.h */,
-				C9AC260C1BAF090A007FC74E /* W8List */,
+				C94B2BEA1E216E170003C0C1 /* W8List-C */,
 				C9AC260B1BAF090A007FC74E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,15 +61,6 @@
 				C9AC260A1BAF090A007FC74E /* W8List */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		C9AC260C1BAF090A007FC74E /* W8List */ = {
-			isa = PBXGroup;
-			children = (
-				C9AC26141BAF093D007FC74E /* main.c */,
-				C9AC261D1BAF3D0B007FC74E /* main.h */,
-			);
-			path = W8List;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,7 +89,7 @@
 		C9AC26021BAF090A007FC74E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Matthew Damore";
 				TargetAttributes = {
 					C9AC26091BAF090A007FC74E = {
@@ -130,7 +119,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9AC26151BAF093D007FC74E /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,8 +138,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -192,8 +182,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;

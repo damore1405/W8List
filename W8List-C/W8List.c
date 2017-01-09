@@ -10,129 +10,152 @@
 #include "W8List.h"
 
 
-int main(int argc, char ** argv)
-{
-//    //TODO: lets go ahead and daemonize
-//    pid_t pid, sid;
-//    
-//    /* Fork off the parent process */
-//    pid = fork();
-//    if (pid < 0) {
-//        exit(EXIT_FAILURE);
-//    }
-//    /* If we got a good PID, then we can exit the parent process. */
-//    if (pid > 0) {
-//        puts("parent process closing");
-//        exit(EXIT_SUCCESS);
-//    }
-//    
-//    /* Change the file mode mask */
-//    umask(0);
-//    
-//    // Set up the logger
-//    setlogmask(LOG_UPTO(LOG_NOTICE));
-//    openlog("W8List Daemon", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
-//    syslog(LOG_NOTICE, "W8List has started");
-//    
-//    /* Create a new SID for the child process */
-//    sid = setsid();
-//    if (sid < 0) {
-//        /* Log any failures here */
-//        exit(EXIT_FAILURE);
-//    }
-//    
-//    
-//    /* Change the current working directory */
-//    if ((chdir("/")) < 0) {
-//        /* Log any failures here */
-//        exit(EXIT_FAILURE);
-//    }
-//    
-//    /* Close out the standard file descriptors */
-//    close(STDIN_FILENO);
-//    close(STDOUT_FILENO);
-//    close(STDERR_FILENO);
-//    
-//    /* Daemon-specific initialization goes here */
-//    
-//    /* The Big Loop */
-//    syslog(LOG_NOTICE, "The class watcher has started");
-//    while (1) {
-//        /* Do some task here ... */
-//        
-//        sleep(10);
-//        
-//    }
+int main(int argc, char ** argv) {
+    static const int tenMin = 60 * 10;
     
-//    exit(EXIT_SUCCESS);
-    
-    CURL *curl;
-    CURLcode res;
-    int opt;
-
-    
-    curl = curl_easy_init();
-    if(curl) {
-        struct string s;
-        init_string(&s);
-        char * baseUrl = malloc(sizeof(char) * 100000000);
-        
-        //TODO: Case based on user input for which semester to select...
-        
-        
-        //TODO: Code implementation for Schools... maybe another string enumeration like the one used for semesters
-        
-        
-        
-        /*  TODO: Implementaion of user input processing... we need
-         *      - School
-         *      - Subject
-         *      - CRN
-         *      - Course Number
-        */
-//        puts(SEMESTER_TOKENS[WINTER_2015_TOKEN]);
-        sprintf(baseUrl, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&page=CourseList&service=direct&sp=%s&sp=SCI&sp=SCS&sp=S16024&sp=S613&sp=5", SEMESTER_TOKENS[FALL_2015_TOKEN]);
-        puts(baseUrl);
-        //Massive ass url for the classes
-        curl_easy_setopt(curl, CURLOPT_URL, baseUrl);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
-        res = curl_easy_perform(curl);
-        
-//        if (res < 0) {
-//            //The request failed...
-//            syslog(LOG_ALERT, "The reqest to drexel TMS failed... check the configuration");
-//            return 1;
-//        }
-        
-        // So now that i have the website, i need to use gumbo to parse out the information i need
-        GumboOutput * output = gumbo_parse(s.ptr);
-        GumboVector children = output->root->v.document.children;
-        
-        printf("Length of root children: %u \n", children.length);
-        GumboNode * body = (GumboNode *) children.data[1];
-        
-        if (body->v.element.tag == GUMBO_TAG_BODY) {
-            puts("Successfully tore out the body of the html");
-        }
-        char * str = malloc(sizeof(char) * 100);
-        long int val = 0;
-        val = strtol("25", NULL, 10);
-        printf("This is what strtol returnes: %ld \n", val);
-        //Now make the children vector equal to the children of the body Element
-        children = body->v.document.children;
-        
-        printf("The number of children in the body is: %u \n", children.length);
-        
-        traverseHtml(body);
-        
-        free(s.ptr);
-//        free(baseUrl);
-        free(output);
-        curl_easy_cleanup(curl);
+    if (argc != 6){
+        puts("Incorrect arg count, please see usage below...");
+        puts("./W8list <Email> <Quarter> <School> <Subject> <CRN> <CourseId>");
+        exit(EXIT_FAILURE);
     }
-    return 0;
+    
+    // Example Args: ./W8list winter CI CS 20116 260
+    char * quarter = argv[0];
+    char * school = argv[1];
+    char * subject = argv[2];
+    char * crn = argv[3];
+    char * courseNum = argv[4];
+    enum SEMESTER_ENUM token;
+    
+    if      (strcasecmp("fall"  , quarter) == 0) token = FALL_2017_TOKEN;
+    else if (strcasecmp("winter", quarter) == 0) token = WINTER_2017_TOKEN;
+    else if (strcasecmp("spring", quarter) == 0) token = SPRING_2017_TOKEN;
+    else                                         token = SUMMER_2017_TOKEN;
+    
+    
+    // Args are sorted out, daemonize...
+    pid_t pid, sid;
+    
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then we can exit the parent process. */
+    if (pid > 0) {
+        puts("parent process closing");
+        exit(EXIT_SUCCESS);
+    }
+    
+    /* Change the file mode mask */
+    umask(0);
+    
+    // Set up the logger
+    setlogmask(LOG_UPTO(LOG_NOTICE));
+    openlog("W8List Daemon", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+    puts("LOGGED");
+    syslog(LOG_NOTICE, "W8List has started");
+    
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+        /* Log any failures here */
+        exit(EXIT_FAILURE);
+    }
+    
+    
+    /* Change the current working directory */
+    if ((chdir("/")) < 0) {
+        /* Log any failures here */
+        exit(EXIT_FAILURE);
+    }
+    
+    /* Close out the standard file descriptors */
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+    
+    syslog(LOG_NOTICE, "The class watcher has started");
+    bool run = true;
+    signal(SIGINT, endrun);
+    signal(SIGTERM, endrun);
+    
+    while (1) {
+        CURL *curl;
+        CURLcode res;
+        curl = curl_easy_init();
+        
+        if(curl) {
+            char * baseUrl = malloc(sizeof(char) * 10000);
+            struct string s;
+            init_string(&s);
+            sprintf(baseUrl, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&page=CourseList&service=direct&sp=%s&sp=S%s&sp=S%s&sp=S%s&sp=S%s&sp=0", SEMESTER_TOKENS[token], school, subject, crn, courseNum);
+            //Massive ass url for the classes
+            curl_easy_setopt(curl, CURLOPT_URL, baseUrl);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+            
+            res = curl_easy_perform(curl);
+            
+            // So now that i have the website, i need to use gumbo to parse out the information i need
+            GumboOutput * output = gumbo_parse(s.ptr);
+            GumboVector children = output->root->v.document.children;
+            GumboNode * body = (GumboNode *) children.data[1];
+            
+            // Now make the children vector equal to the children of the body Element
+            children = body->v.document.children;
+            
+            int * closed = malloc(sizeof(int)); *closed = -1;
+            traverseHtml(body, closed);
+            
+            char * message = malloc(sizeof(char) * 1000);
+            if( *closed == 1 ){
+                sprintf(message, "osascript -e 'display notification \"\" with title \"OH SHIT ITS CLOSED\"'");
+                syslog(LOG_NOTICE, "Looks like its closed");
+            } else {
+                sprintf(message, "osascript -e 'display notification \"\" with title \"WOAH NELLY ITS OPEN\"'");
+                syslog(LOG_NOTICE, "Looks like its open");
+            }
+            alert(message);
+            free(message);
+            free(closed);
+            gumbo_destroy_output(&kGumboDefaultOptions, output);
+            free(s.ptr);
+            free(baseUrl);
+            curl_easy_cleanup(curl);
+            sleep(tenMin);
+        }
+    }
+    free(quarter);
+    free(school);
+    free(subject);
+    free(crn);
+    free(courseNum);
+    return EXIT_SUCCESS;
+}
+
+void traverseHtml(GumboNode * root, int * closed){
+    if (root->type == GUMBO_NODE_TEXT) {
+        if (!strcasecmp(root->v.text.text, "enroll")) {
+            GumboNode * tableRow = root->parent->parent;
+            const char * data = getCellData(tableRow);
+            *closed = !strcasecmp("CLOSED", data) ? 1 : 0;
+            return;
+        }
+    }
+
+    if (root->v.element.children.length > 0 && root->v.element.children.length <= root->v.element.children.capacity) {
+        for (int i = 0; i < root->v.element.children.length ; ++i) {
+            traverseHtml((GumboNode *)root->v.element.children.data[i], closed);
+        }
+    }
+}
+
+const char * getCellData(GumboNode * dataRow){
+    GumboNode ** kiddoes = (GumboNode** )dataRow->v.element.children.data;
+    GumboNode * value    = kiddoes[3]->v.element.children.data[0];
+    
+    return value->v.text.text;
 }
 
 void init_string(struct string *s) {
@@ -160,51 +183,27 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
     return size*nmemb;
 }
 
-void traverseHtml(GumboNode * root){
-    if (root->parent != NULL && root->type != GUMBO_NODE_WHITESPACE && root->type == GUMBO_NODE_TEXT) {
-        if (!strcasecmp(root->v.text.text, "enroll")) {
-            
-            //MAX ENROLL 1
-            //NUMBER     3
-            
-//            GumboNode * tableRow = root->parent->parent;
-//            GumboNode ** kiddoes = (GumboNode** )tableRow->v.element.children.data;
-//            
-//            GumboNode * maxEnroll = kiddoes[1];
-//            GumboNode * number    = kiddoes[3];
-//            
-//            GumboNode * maxEnrollText = maxEnroll->v.element.children.data[0];
-//            GumboNode * numberText    = number   ->v.element.children.data[0];
-//            
-//            puts(maxEnrollText->v.text.text);
-//            puts(numberText->v.text.text);
-            
-            GumboNode * tableRow = root->parent->parent;
-            const char * data = getCellData(tableRow);
-            printf("enroll: %s \n", data);
-            return;
-        }
-        else if (!strcasecmp(root->v.text.text, "max enroll")) {
-            GumboNode * tableRow = root->parent->parent;
-            const char * data = getCellData(tableRow);
-            printf("max enroll: %s \n", data);
-            return;
-        }
-    }
-                                                            /* vvv  Why is this needed?????????  vvv */
-    if (root->v.element.children.length > 0 && root->v.element.children.length <= root->v.element.children.capacity) {
-        for (int i = 0; i < root->v.element.children.length ; ++i) {
-            traverseHtml((GumboNode *)root->v.element.children.data[i]);
-        }
-    }
+int alert(char * alert){
+#ifdef __APPLE__
+    // Use the system notification
+    char * sysCall = "osascript -e 'display notification \"\" with title \"%s\"'";
+    char * alertString = malloc(sizeof(char) * 1000);
+    sprintf(alertString, sysCall, alert);
+    int returnVal = system(alertString);
+    free(sysCall);
+    free(alertString);
+    return returnVal;
     
-    else return;
+#elif __linux
+    // Use the mail app
+#endif
 }
 
-const char * getCellData(GumboNode * dataRow){
-    GumboNode ** kiddoes = (GumboNode** )dataRow->v.element.children.data;
-    GumboNode * value    = kiddoes[3]->v.element.children.data[0];
-    
-    
-    return value->v.text.text;
+
+void endrun(int signum)
+{
+    alert("osascript -e 'display notification \"\" with title \"Guh ive been shot\"'");
+    exit(EXIT_SUCCESS);
 }
+
+

@@ -12,7 +12,7 @@
 // Preprocesser code to link up an enumeration for the string tokens
 #define FOREACH_SEMESTER(SEMESTER_TOKEN) \
 SEMESTER_TOKEN(ZH4sIAAAAAAAAADWLOw7CMBAFlyA%2BNaInF8DGSKGhBFGlQeQCS7yKguzg2BtIxYm4GnfAKOKV82beH5gEDyvSndCeejKi9iyedGUbhEZGUZC3MGyUwDiHGZZc1JYYlvkNHyhDa%2BQPBEbr9jnMOSaHu47GYjAMNpW8sK%2Bb6v8fKZQtvCDpnWOYbjcqU1kMTmhMeu7QRylV2Vrtvq1QxdGkAAAA)   \
-SEMESTER_TOKEN(ZH4sIAAAAAAAAAFvzloG1uIhBPjWlVC%2BlKLUiNUcvs6hErzw1qSS3WC8lsSRRLyS1KJcBAhiZGJh9GNgTk0tCMnNTSxhEfLISyxL1iwtz9EECxSWJuQXWPgwcJUAtzvkpQBVCEBU5iXnp%2BsElRZl56TB5l9Ti5EKGOgamioKCEgY2IwNDUyNToJHhmXlAaYXA0sQiEG1oqmtoBgCbhSKKpgAAAA)  \
+SEMESTER_TOKEN(ZH4sIAAAAAAAAAFvzloG1uIhBPjWlVC%2BlKLUiNUcvs6hErzw1qSS3WC8lsSRRLyS1KJcBAhiZGJh9GNgTk0tCMnNTSxhEfLISyxL1iwtz9EECxSWJuQXWPgwcJUAtzvkpQBVCEBU5iXnp%2BsElRZl56TB5l9Ti5EKGOgamioKCEgY2IwNDMyNToJHhmXlAaYXA0sQiEG1opmtoDgAb98cdpgAAAA%3D%3D)  \
 SEMESTER_TOKEN(ZH4sIAAAAAAAAAFvzloG1uIhBPjWlVC%2BlKLUiNUcvs6hErzw1qSS3WC8lsSRRLyS1KJcBAhiZGJh9GNgTk0tCMnNTSxhEfLISyxL1iwtz9EECxSWJuQXWPgwcJUAtzvkpQBVCEBU5iXnp%2BsElRZl56TB5l9Ti5EKGOgamioKCEgY2IwNDU2NToJHBBSBVCoGliUVAZQqGprqGZgAfTc62pgAAArA)   \
 SEMESTER_TOKEN(ZH4sIAAAAAAAAADWMPQ6CQBCFR4w%2FtbGXC7iAERtLLWkMXGBkJ2QNizA7KJUn8mrewTXEV37ve%2B%2F9gZlj2JDulWYaqFaGRT3pKtYpjYKqILYwZhLANIMFllIYSwLr7IYPjFxXRz%2FgBG17zGApfnK6a2%2BsRqPGpopyYdNU%2F%2F5MruzgBcHQtgLzXZyk%2B9Rf5r21xOGlR%2FZamKTb5PAFy%2Bn%2BwKYAAAA)  \
 
@@ -20,17 +20,20 @@ SEMESTER_TOKEN(ZH4sIAAAAAAAAADWMPQ6CQBCFR4w%2FtbGXC7iAERtLLWkMXGBkJ2QNizA7KJUn8m
 #define GENERATE_STRING(STRING) #STRING,
 
 enum SEMESTER_ENUM {
-    FALL_2015_TOKEN = 0,
-    WINTER_2015_TOKEN,
-    SPRING_2016_TOKEN,
-    SUMMER_2016_TOKEN
+    FALL_2017_TOKEN = 0,
+    WINTER_2017_TOKEN,
+    SPRING_2017_TOKEN,
+    SUMMER_2017_TOKEN
 };
 
 static const char *SEMESTER_TOKENS[] = {
     FOREACH_SEMESTER(GENERATE_STRING)
 };
+
+
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 #include <ctype.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -47,7 +50,8 @@ struct string {
 
 void init_string(struct string *s);
 size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s);
-void traverseHtml(GumboNode * root);
+void traverseHtml(GumboNode * root, int * closed);
 const char * getCellData(GumboNode * dataRow);
-
+void endrun(int signum);
+int alert(char * alert);
 #endif /* main_h */
