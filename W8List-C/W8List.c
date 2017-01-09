@@ -5,13 +5,13 @@
 //  Created by Matthew D'Amore on 9/20/15.
 //  Copyright © 2015 Matthew Damore. All rights reserved.
 //
-// TODO: NEED TO EMPLEMENT ERROR CHECKING SO THAT WHEN THE WEBSITE IS DOWN, SO NOBODY GETS NOTIFIED
 
 #include "W8List.h"
 
+static volatile int run = 1;
+static const int tenMin = 60 * 10;
 
 int main(int argc, char ** argv) {
-    static const int tenMin = 60 * 10;
     
     if (argc != 6){
         puts("Incorrect arg count, please see usage below...");
@@ -20,11 +20,11 @@ int main(int argc, char ** argv) {
     }
     
     // Example Args: ./W8list winter CI CS 20116 260
-    char * quarter = argv[0];
-    char * school = argv[1];
-    char * subject = argv[2];
-    char * crn = argv[3];
-    char * courseNum = argv[4];
+    char * quarter = argv[1];
+    char * school = argv[2];
+    char * subject = argv[3];
+    char * crn = argv[4];
+    char * courseNum = argv[5];
     enum SEMESTER_ENUM token;
     
     if      (strcasecmp("fall"  , quarter) == 0) token = FALL_2017_TOKEN;
@@ -76,11 +76,10 @@ int main(int argc, char ** argv) {
     close(STDERR_FILENO);
     
     syslog(LOG_NOTICE, "The class watcher has started");
-    bool run = true;
     signal(SIGINT, endrun);
     signal(SIGTERM, endrun);
     
-    while (1) {
+    while (run == 1) {
         CURL *curl;
         CURLcode res;
         curl = curl_easy_init();
@@ -91,6 +90,7 @@ int main(int argc, char ** argv) {
             init_string(&s);
             sprintf(baseUrl, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&page=CourseList&service=direct&sp=%s&sp=S%s&sp=S%s&sp=S%s&sp=S%s&sp=0", SEMESTER_TOKENS[token], school, subject, crn, courseNum);
             //Massive ass url for the classes
+            syslog(LOG_NOTICE, "Using url: %s",baseUrl);
             curl_easy_setopt(curl, CURLOPT_URL, baseUrl);
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
@@ -108,16 +108,19 @@ int main(int argc, char ** argv) {
             int * closed = malloc(sizeof(int)); *closed = -1;
             traverseHtml(body, closed);
             
-            char * message = malloc(sizeof(char) * 1000);
+            char * message;
             if( *closed == 1 ){
-                sprintf(message, "osascript -e 'display notification \"\" with title \"OH SHIT ITS CLOSED\"'");
+                message = "OH DANG ITS CLOSED";
                 syslog(LOG_NOTICE, "Looks like its closed");
-            } else {
-                sprintf(message, "osascript -e 'display notification \"\" with title \"WOAH NELLY ITS OPEN\"'");
+            } else if (*closed == 0){
+                message = "WOAH NELLY ITS OPEN";
                 syslog(LOG_NOTICE, "Looks like its open");
+            } else {
+                message = "Looks like something went wrong with the page load";
+                syslog(LOG_NOTICE, "error on page-load");
             }
+            
             alert(message);
-            free(message);
             free(closed);
             gumbo_destroy_output(&kGumboDefaultOptions, output);
             free(s.ptr);
@@ -126,6 +129,7 @@ int main(int argc, char ** argv) {
             sleep(tenMin);
         }
     }
+    alert("guh ive been shot");
     free(quarter);
     free(school);
     free(subject);
@@ -184,26 +188,16 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
 }
 
 int alert(char * alert){
-#ifdef __APPLE__
-    // Use the system notification
+    // Use applescript to send email
     char * sysCall = "osascript -e 'display notification \"\" with title \"%s\"'";
-    char * alertString = malloc(sizeof(char) * 1000);
+    char * alertString = malloc(sizeof(char) * (strlen(sysCall) + strlen(alert)));
     sprintf(alertString, sysCall, alert);
     int returnVal = system(alertString);
-    free(sysCall);
+    syslog(LOG_NOTICE, "%s", alertString);
     free(alertString);
     return returnVal;
-    
-#elif __linux
-    // Use the mail app
-#endif
 }
 
-
-void endrun(int signum)
-{
-    alert("osascript -e 'display notification \"\" with title \"Guh ive been shot\"'");
-    exit(EXIT_SUCCESS);
-}
+void endrun(int signum) {run = 0;}
 
 
