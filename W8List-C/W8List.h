@@ -53,5 +53,5 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s);
 void traverseHtml(GumboNode * root, int * closed);
 const char * getCellData(GumboNode * dataRow);
 void endrun(int signum);
-int alert(char * alert);
+int alertCourseStatus(int * closed, char * subject, char * courseNum);
 #endif /* main_h */

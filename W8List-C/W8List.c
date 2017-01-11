@@ -9,13 +9,12 @@
 #include "W8List.h"
 
 static volatile int run = 1;
-static const int tenMin = 60 * 10;
+static const int sleepTime = 60 * 30;
 
 int main(int argc, char ** argv) {
-    
     if (argc != 6){
         puts("Incorrect arg count, please see usage below...");
-        puts("./W8list <Email> <Quarter> <School> <Subject> <CRN> <CourseId>");
+        puts("./W8list <Quarter> <School> <Subject> <CRN> <CourseId>");
         exit(EXIT_FAILURE);
     }
     
@@ -107,29 +106,16 @@ int main(int argc, char ** argv) {
             
             int * closed = malloc(sizeof(int)); *closed = -1;
             traverseHtml(body, closed);
+            alertCourseStatus(closed, subject, courseNum);
             
-            char * message;
-            if( *closed == 1 ){
-                message = "OH DANG ITS CLOSED";
-                syslog(LOG_NOTICE, "Looks like its closed");
-            } else if (*closed == 0){
-                message = "WOAH NELLY ITS OPEN";
-                syslog(LOG_NOTICE, "Looks like its open");
-            } else {
-                message = "Looks like something went wrong with the page load";
-                syslog(LOG_NOTICE, "error on page-load");
-            }
-            
-            alert(message);
             free(closed);
             gumbo_destroy_output(&kGumboDefaultOptions, output);
             free(s.ptr);
             free(baseUrl);
             curl_easy_cleanup(curl);
-            sleep(tenMin);
+            sleep(sleepTime);
         }
     }
-    alert("guh ive been shot");
     free(quarter);
     free(school);
     free(subject);
@@ -187,17 +173,44 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
     return size*nmemb;
 }
 
-int alert(char * alert){
-    // Use applescript to send email
-    char * sysCall = "osascript -e 'display notification \"\" with title \"%s\"'";
-    char * alertString = malloc(sizeof(char) * (strlen(sysCall) + strlen(alert)));
-    sprintf(alertString, sysCall, alert);
-    int returnVal = system(alertString);
-    syslog(LOG_NOTICE, "%s", alertString);
-    free(alertString);
+int alertCourseStatus(int * closed, char * subject, char * courseNum){
+    const time_t currentRawTime = time(NULL);
+    struct tm *localTime = localtime(&currentRawTime);
+    int hour = localTime->tm_hour;
+    int returnVal = EXIT_SUCCESS;
+    char * alertInfo;
+    
+    if (*closed == 1){
+        alertInfo = "Is closed";
+    } else if (closed == 0){
+        alertInfo = "Is open, move quick!";
+    } else {
+        alertInfo = "Isn't loading correctly, something went wrong, look into it maybe?";
+    }
+    
+    char * alertFormat = "%s:%s is %s\n";
+    char * alert = malloc(sizeof(char) * (6 + strlen(subject) + strlen(courseNum)));
+    sprintf(alert, alertFormat, subject, courseNum, alertInfo);
+    char * sysCallFormat = "osascript -e 'display notification \"\" with title \"%s\"'";
+    char * sysCallString = malloc(sizeof(char) * (strlen(sysCallFormat) + strlen(alert)));
+    sprintf(sysCallString, sysCallString, alert);
+
+    // Only send Ping if its noon, open, or there is an issue with pageload
+    if((*closed == 0 && hour == 12) || *closed != 0){
+        returnVal = system(sysCallString);
+    }
+    
+    syslog(LOG_NOTICE, "%s", alert);
+    free(sysCallString);
+    free(alert);
+    free(localTime);
     return returnVal;
 }
 
-void endrun(int signum) {run = 0;}
+void endrun(int signum) {
+    
+    syslog(LOG_NOTICE, "Waitlist process has been closed");
+    run = 0;
+}
 
 
