@@ -9,7 +9,7 @@
 #include "W8List.h"
 
 static volatile int run = 1;
-static const int sleepTime = 60 * 30;
+static const int sleepTime = 60 * 10; // ten minutes
 
 int main(int argc, char ** argv) {
     if (argc != 6){
@@ -77,50 +77,56 @@ int main(int argc, char ** argv) {
     syslog(LOG_NOTICE, "The class watcher has started");
     signal(SIGINT, endrun);
     signal(SIGTERM, endrun);
+
+    CURL *curl;
+    CURLcode res;
+    curl = curl_easy_init();
+    
+    if(!curl) {
+        syslog(LOG_NOTICE, "Curl error! exiting...");
+        exit(EXIT_FAILURE);
+    }
+    
+    char * baseUrl = malloc(sizeof(char) * 10000);
+    struct string s;
+    init_string(&s);
+    sprintf(baseUrl, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&page=CourseList&service=direct&sp=%s&sp=S%s&sp=S%s&sp=S%s&sp=S%s&sp=0", SEMESTER_TOKENS[token], school, subject, crn, courseNum);
+    //Massive ass url for the classes
+    syslog(LOG_NOTICE, "Using url: %s",baseUrl);
+    curl_easy_setopt(curl, CURLOPT_URL, baseUrl);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
     
     while (run == 1) {
-        CURL *curl;
-        CURLcode res;
-        curl = curl_easy_init();
+        free(s.ptr);
+        init_string(&s);
+        res = curl_easy_perform(curl);
         
-        if(curl) {
-            char * baseUrl = malloc(sizeof(char) * 10000);
-            struct string s;
-            init_string(&s);
-            sprintf(baseUrl, "https://duapp2.drexel.edu/webtms_du/app?component=courseDetails2&page=CourseList&service=direct&sp=%s&sp=S%s&sp=S%s&sp=S%s&sp=S%s&sp=0", SEMESTER_TOKENS[token], school, subject, crn, courseNum);
-            //Massive ass url for the classes
-            syslog(LOG_NOTICE, "Using url: %s",baseUrl);
-            curl_easy_setopt(curl, CURLOPT_URL, baseUrl);
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-            
-            res = curl_easy_perform(curl);
-            
-            // So now that i have the website, i need to use gumbo to parse out the information i need
-            GumboOutput * output = gumbo_parse(s.ptr);
-            GumboVector children = output->root->v.document.children;
-            GumboNode * body = (GumboNode *) children.data[1];
-            
-            // Now make the children vector equal to the children of the body Element
-            children = body->v.document.children;
-            
-            int * closed = malloc(sizeof(int)); *closed = -1;
-            traverseHtml(body, closed);
-            alertCourseStatus(closed, subject, courseNum);
-            
-            free(closed);
-            gumbo_destroy_output(&kGumboDefaultOptions, output);
-            free(s.ptr);
-            free(baseUrl);
-            curl_easy_cleanup(curl);
-            sleep(sleepTime);
+        if (res != CURLE_OK || res != CURLE_RECV_ERROR){
+            syslog(LOG_NOTICE, "Issue loading W8List page, check TMS");
         }
+        
+        // So now that i have the website, i need to use gumbo to parse out the information i need
+        GumboOutput * output = gumbo_parse(s.ptr);
+        GumboVector children = output->root->v.document.children;
+        GumboNode * body = (GumboNode *) children.data[1];
+        
+        // Now make the children vector equal to the children of the body Element
+        children = body->v.document.children;
+        
+        int * closed = malloc(sizeof(int));
+        *closed = -1;
+        
+        traverseHtml(body, closed);
+        alertCourseStatus(closed, subject, courseNum);
+        
+        free(closed);
+        gumbo_destroy_output(&kGumboDefaultOptions, output);
+        sleep(sleepTime);
     }
-    free(quarter);
-    free(school);
-    free(subject);
-    free(crn);
-    free(courseNum);
+    curl_easy_cleanup(curl);
+    free(baseUrl);
+    free(s.ptr);
     return EXIT_SUCCESS;
 }
 
@@ -129,11 +135,11 @@ void traverseHtml(GumboNode * root, int * closed){
         if (!strcasecmp(root->v.text.text, "enroll")) {
             GumboNode * tableRow = root->parent->parent;
             const char * data = getCellData(tableRow);
-            *closed = !strcasecmp("CLOSED", data) ? 1 : 0;
+            *closed = strcasecmp("CLOSED", data) == 0 ? 1 : 0;
             return;
         }
     }
-
+    
     if (root->v.element.children.length > 0 && root->v.element.children.length <= root->v.element.children.capacity) {
         for (int i = 0; i < root->v.element.children.length ; ++i) {
             traverseHtml((GumboNode *)root->v.element.children.data[i], closed);
@@ -176,34 +182,32 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
 int alertCourseStatus(int * closed, char * subject, char * courseNum){
     const time_t currentRawTime = time(NULL);
     struct tm *localTime = localtime(&currentRawTime);
-    int hour = localTime->tm_hour;
     int returnVal = EXIT_SUCCESS;
     char * alertInfo;
     
     if (*closed == 1){
         alertInfo = "Is closed";
-    } else if (closed == 0){
+    } else if (*closed == 0){
         alertInfo = "Is open, move quick!";
     } else {
         alertInfo = "Isn't loading correctly, something went wrong, look into it maybe?";
     }
     
-    char * alertFormat = "%s:%s is %s\n";
-    char * alert = malloc(sizeof(char) * (6 + strlen(subject) + strlen(courseNum)));
+    char * alertFormat = "%s%s is %s\n";
+    char * alert = malloc(sizeof(char) * (6 + strlen(subject) + strlen(alertFormat) + strlen(alertInfo)+ strlen(courseNum)));
     sprintf(alert, alertFormat, subject, courseNum, alertInfo);
     char * sysCallFormat = "osascript -e 'display notification \"\" with title \"%s\"'";
     char * sysCallString = malloc(sizeof(char) * (strlen(sysCallFormat) + strlen(alert)));
-    sprintf(sysCallString, sysCallString, alert);
+    sprintf(sysCallString, sysCallFormat, alert);
 
     // Only send Ping if its noon, open, or there is an issue with pageload
-    if((*closed == 0 && hour == 12) || *closed != 0){
+    if((*closed == 1 && localTime->tm_hour == 12 && localTime->tm_min == 0) || *closed != 1){
         returnVal = system(sysCallString);
     }
-    
+
     syslog(LOG_NOTICE, "%s", alert);
     free(sysCallString);
     free(alert);
-    free(localTime);
     return returnVal;
 }
 
